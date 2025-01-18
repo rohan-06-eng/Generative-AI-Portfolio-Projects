@@ -123,8 +123,15 @@ query_text = st.text_input("What would you like to ask the doctor?", value=st.se
 # Add an informative tooltip for the user input
 st.info("Ask your health-related questions. Type 'stop' to end the conversation.")
 
-# Add a Submit button with the improved design
-if st.button("Submit"):
+# Add Submit and Stop buttons in the same line using columns
+col1, col2 = st.columns([1, 1])
+with col1:
+    submit_button = st.button("Submit")
+with col2:
+    stop_button = st.button("Stop Conversation")
+
+# Action for Submit button
+if submit_button:
     if query_text.lower() == "stop":
         st.session_state.conversation.append("The conversation has ended.")
         st.write("Thank you for chatting with the Doctor!")
@@ -143,5 +150,10 @@ if st.button("Submit"):
             st.session_state.conversation.append(f"You: {query_text}")
             st.session_state.conversation.append(f"Doctor: {result}")
 
-        # Save the current input text to session state so it remains visible
+        # Clear the input box after submission
         st.session_state.query_text = ""  # Clear input after submission
+
+# Action for Stop button
+if stop_button:
+    st.session_state.conversation.append("The conversation has ended.")
+    st.write("Thank you for chatting with the Doctor!")
