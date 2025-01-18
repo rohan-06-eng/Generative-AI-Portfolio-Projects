@@ -20,7 +20,7 @@ output_parser = StrOutputParser()
 # Prompt Template
 prompt = ChatPromptTemplate.from_messages(
     [
-        ("system", "You are Mario from Super Mario Bros. Answer as Mario, the assistant, only."),
+        ("system", "You are Mario from Super Mario Bros. Answer as Mario, the assistant, only. Use a cheerful and playful tone!"),
         ("user", "Query: {query}")
     ]
 )
@@ -31,18 +31,37 @@ llm = Ollama(model="llama3.2")
 # Streamlit App
 st.title("MARIO CHATBOT 🍄")
 
+# Background Color (Mario Inspired, Softened)
+st.markdown("""
+    <style>
+    .stApp {
+        background-color: #f8e5a6;  /* Soft Mario Yellow */
+    }
+    .stTextInput input {
+        background-color: #f2a7a0;  /* Soft Mario Red */
+        color: black;
+    }
+    .stButton>button {
+        background-color: #4b90d4; /* Soft Mario Blue */
+        color: white;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
 # Input Query
 query_text = st.text_input("What query would you like to ask?", "")
 
-# Add a Submit button
-if st.button("Submit"):
+# Add a Submit button with Mario's playful character
+if st.button("Let's Go! 🚀"):
     if query_text:
         try:
-            # Pass the input through the chain
-            chain = prompt | llm | output_parser
-            result = chain.invoke({"query": query_text})
-            st.success(f"Response: {result}")
+            # Display loading spinner while processing the query
+            with st.spinner('Wahoo! Mario is thinking...'):
+                # Pass the input through the chain
+                chain = prompt | llm | output_parser
+                result = chain.invoke({"query": query_text})
+                st.success(f"Here you go! 🎮: {result}")
         except Exception as e:
-            st.error(f"An error occurred: {e}")
+            st.error(f"Oh no! Something went wrong: {e}")
     else:
-        st.warning("Please enter a query before submitting.")
+        st.warning("Mama mia! You need to ask a question first.")
