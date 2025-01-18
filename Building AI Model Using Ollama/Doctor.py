@@ -98,7 +98,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Title with Icon and Text
-st.markdown("<h1 style='text-align: center;'>Doctor Chatbot 🩺</h1>", unsafe_allow_html=True)
+st.markdown("<h1 style='text-align: center;'>HealthMate Bot 🏥🩺</h1>", unsafe_allow_html=True)
 
 # Initialize a session state for conversation tracking
 if 'conversation' not in st.session_state:
