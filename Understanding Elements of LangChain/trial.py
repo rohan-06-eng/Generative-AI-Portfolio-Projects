@@ -41,14 +41,29 @@ fun_facts = [
 # Streamlit App
 st.set_page_config(page_title="Doctor Chatbot 🩺", page_icon="🩺", layout="centered")
 
-# Custom styling (soft colors and aesthetics)
+# Custom styling (soothing and amazing background)
 st.markdown("""
     <style>
     body {
-        background-color: #f0f8ff;  # Light blue background
+        background: linear-gradient(to right, #a8c0ff, #3f87a6, #e6e9f0);  # Soft pastel gradient background (light blues and purples)
+        animation: gradientAnimation 10s ease infinite;  # Smooth background animation effect
     }
+
+    /* Gradient Animation */
+    @keyframes gradientAnimation {
+        0% {
+            background: linear-gradient(to right, #a8c0ff, #3f87a6, #e6e9f0);
+        }
+        50% {
+            background: linear-gradient(to right, #fbc2eb, #a6c1ee, #f0e6f6);
+        }
+        100% {
+            background: linear-gradient(to right, #a8c0ff, #3f87a6, #e6e9f0);
+        }
+    }
+
     .stButton > button {
-        background-color: #68a0b0;  # Soft teal button color
+        background-color: #ffb3d9;  # Soft pink button color
         color: white;
         border-radius: 10px;
         padding: 12px 30px;
@@ -56,29 +71,53 @@ st.markdown("""
         font-weight: bold;
     }
     .stButton > button:hover {
-        background-color: #4d8a96;  # Darker teal for hover effect
+        background-color: #ff66b2;  # Darker pink on hover
     }
+
     h1 {
-        color: #5e8c8e;  # Soft teal header color
+        color: #ffffff;  # White title for a calm and clean look
         text-align: center;
+        font-family: 'Arial', sans-serif;
+        font-size: 36px;
     }
+
     .stTextInput input {
         border-radius: 10px;
-        border: 2px solid #68a0b0;
+        border: 2px solid #ff66b2;  # Soft pink input border
         padding: 10px;
         font-size: 16px;
     }
+
     .stTextInput input:focus {
-        border-color: #4d8a96;
+        border-color: #ff3399;  # Darker pink on focus
     }
+
     .stSpinner {
-        color: #68a0b0;  # Matching spinner color with the theme
+        color: #ffb3d9;  # Matching spinner color with the theme
     }
+
     .stAlert {
-        background-color: #ffcccb;  # Soft red alert background
+        background-color: #ffebee;  # Soft red alert background
     }
+
     .stMarkdown {
         text-align: center;
+    }
+
+    /* User Message Styling */
+    .user-message {
+        background-color: #b3e5fc;  # Light blue background for user messages
+        padding: 8px;
+        border-radius: 5px;
+        margin-bottom: 10px;
+    }
+
+    /* Doctor Message Styling */
+    .doctor-message {
+        background-color: #d1c4e9;  # Soft lavender background for doctor responses
+        padding: 8px;
+        border-radius: 5px;
+        margin-bottom: 10px;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -90,8 +129,21 @@ st.markdown("<h1 style='text-align: center;'>Doctor Chatbot 🩺</h1>", unsafe_a
 if 'conversation' not in st.session_state:
     st.session_state.conversation = []
 
+# Initialize session state for user input (keeps the input text when submitting)
+if 'query_text' not in st.session_state:
+    st.session_state.query_text = ""
+
+# Display conversation history with color-coded messages
+if st.session_state.conversation:
+    st.write("### Conversation History:")
+    for message in st.session_state.conversation:
+        if message.startswith("You:"):
+            st.markdown(f"<div class='user-message'>{message}</div>", unsafe_allow_html=True)
+        elif message.startswith("Doctor:"):
+            st.markdown(f"<div class='doctor-message'>{message}</div>", unsafe_allow_html=True)
+
 # Input Query
-query_text = st.text_input("What would you like to ask the doctor?", "")
+query_text = st.text_input("What would you like to ask the doctor?", value=st.session_state.query_text)
 
 # Add an informative tooltip for the user input
 st.info("Ask your health-related questions. Type 'stop' to end the conversation.")
@@ -112,20 +164,9 @@ if st.button("Submit"):
             result = chain.invoke({"query": query_text})
             st.success(f"Doctor's Response: {result}")
 
-            # Store the user query and doctor's response
+            # Store the user query and doctor's response in the conversation history
             st.session_state.conversation.append(f"You: {query_text}")
             st.session_state.conversation.append(f"Doctor: {result}")
 
-        # Ask if the user wants to ask something else
-        continue_conversation = st.text_input("Would you like to ask anything else? (yes/no)", "")
-        if continue_conversation.lower() == "no":
-            st.session_state.conversation.append("The conversation has ended.")
-            st.write("Thank you for chatting with the Doctor!")
-        elif continue_conversation.lower() == "yes":
-            st.write("Great! Please ask another question.")
-
-# Display the conversation history
-if st.session_state.conversation:
-    st.write("### Conversation History:")
-    for message in st.session_state.conversation:
-        st.write(message)
+        # Save the current input text to session state so it remains visible
+        st.session_state.query_text = ""  # Clear input after submission
