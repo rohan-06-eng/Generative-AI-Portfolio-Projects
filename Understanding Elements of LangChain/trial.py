@@ -39,7 +39,7 @@ fun_facts = [
 ]
 
 # Streamlit App
-st.set_page_config(page_title="🧑🏻‍⚕️Doctor Chatbot 🩺", page_icon="🩺", layout="centered")
+st.set_page_config(page_title="Doctor Chatbot 🩺", page_icon="🩺", layout="centered")
 
 # Custom styling (soft colors and aesthetics)
 st.markdown("""
@@ -84,29 +84,48 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Title with Icon and Text
-st.markdown("<h1 style='text-align: center;'>🧑🏻‍⚕️Doctor Chatbot 🩺</h1>", unsafe_allow_html=True)
+st.markdown("<h1 style='text-align: center;'>Doctor Chatbot 🩺</h1>", unsafe_allow_html=True)
+
+# Initialize a session state for conversation tracking
+if 'conversation' not in st.session_state:
+    st.session_state.conversation = []
 
 # Input Query
-query_text = st.text_input("What query would you like to ask?", "")
+query_text = st.text_input("What would you like to ask the doctor?", "")
 
 # Add an informative tooltip for the user input
-st.info("Please enter your medical question in the text box above. We will try to provide evidence-based medical advice.")
+st.info("Ask your health-related questions. Type 'stop' to end the conversation.")
 
 # Add a Submit button with the improved design
 if st.button("Submit"):
-    if query_text:
-        try:
-            # Show a random fun fact while processing
-            with st.spinner('Processing your query...'):
-                # Show fun fact during processing
-                random_fact = random.choice(fun_facts)
-                st.info(f"Here's an interesting fact: {random_fact}")
+    if query_text.lower() == "stop":
+        st.session_state.conversation.append("The conversation has ended.")
+        st.write("Thank you for chatting with the Doctor!")
+    elif query_text:
+        # Show a random fun fact while processing
+        with st.spinner('Processing your query...'):
+            random_fact = random.choice(fun_facts)
+            st.info(f"Here's an interesting fact: {random_fact}")
 
-                # Pass the input through the chain
-                chain = prompt | llm | output_parser
-                result = chain.invoke({"query": query_text})
-                st.success(f"Response: {result}")
-        except Exception as e:
-            st.error(f"An error occurred: {e}")
-    else:
-        st.warning("Please enter a query before submitting.")
+            # Pass the input through the chain and get the doctor's response
+            chain = prompt | llm | output_parser
+            result = chain.invoke({"query": query_text})
+            st.success(f"Doctor's Response: {result}")
+
+            # Store the user query and doctor's response
+            st.session_state.conversation.append(f"You: {query_text}")
+            st.session_state.conversation.append(f"Doctor: {result}")
+
+        # Ask if the user wants to ask something else
+        continue_conversation = st.text_input("Would you like to ask anything else? (yes/no)", "")
+        if continue_conversation.lower() == "no":
+            st.session_state.conversation.append("The conversation has ended.")
+            st.write("Thank you for chatting with the Doctor!")
+        elif continue_conversation.lower() == "yes":
+            st.write("Great! Please ask another question.")
+
+# Display the conversation history
+if st.session_state.conversation:
+    st.write("### Conversation History:")
+    for message in st.session_state.conversation:
+        st.write(message)
